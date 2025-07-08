@@ -246,6 +246,13 @@ def post_with_retry(url, headers, json_data, retries=3, delay=3):
 def generate_explainer_script(daily_data):
     """Generate a 60-second explainer script using OpenAI."""
     try:
+        # Check if OpenAI client is available
+        if openai_client is None:
+            logging.warning(
+                "OpenAI client not available, skipping explainer script generation"
+            )
+            return None
+
         # Load prompts from Google Sheets
         prompts = load_prompts_from_sheet()
 
@@ -287,6 +294,13 @@ def generate_explainer_script(daily_data):
 def generate_one_sheet(daily_data):
     """Generate a longer one-sheet news summary using OpenAI."""
     try:
+        # Check if OpenAI client is available
+        if openai_client is None:
+            logging.warning(
+                "OpenAI client not available, skipping one-sheet generation"
+            )
+            return None
+
         # Load prompts from Google Sheets
         prompts = load_prompts_from_sheet()
 
@@ -446,6 +460,11 @@ def save_one_sheet(sheet, one_sheet):
 def is_us_based_article(headline, summary, source):
     """Use OpenAI to determine if article is US-based news."""
     try:
+        # Check if OpenAI client is available
+        if openai_client is None:
+            logging.warning("OpenAI client not available, including all articles")
+            return True
+
         # Load prompts from Google Sheets
         prompts = load_prompts_from_sheet()
 
