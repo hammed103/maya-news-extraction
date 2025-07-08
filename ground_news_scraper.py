@@ -44,6 +44,28 @@ _cache_timestamp = None
 CACHE_DURATION = 300  # 5 minutes in seconds
 
 
+def get_google_client():
+    """Get authenticated Google Sheets client."""
+    google_creds = os.getenv("GOOGLE_CREDENTIALS_JSON")
+    if google_creds:
+        import json
+        import tempfile
+
+        # Create temporary credentials file from environment variable
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".json", delete=False
+        ) as temp_file:
+            temp_file.write(google_creds)
+            temp_creds_path = temp_file.name
+        client = pygsheets.authorize(service_file=temp_creds_path)
+        # Clean up temp file
+        os.unlink(temp_creds_path)
+        return client
+    else:
+        # Fall back to local credentials file
+        return pygsheets.authorize(service_file="credentials.json")
+
+
 def load_keywords_from_sheet():
     """Load keywords and categories from Google Sheets with caching."""
     global _cached_keywords, _cache_timestamp
@@ -59,7 +81,7 @@ def load_keywords_from_sheet():
         return _cached_keywords
 
     try:
-        client = pygsheets.authorize(service_file="credentials.json")
+        client = get_google_client()
         sheet = client.open("Maya News Extraction")
 
         try:
@@ -103,7 +125,7 @@ def load_keywords_from_sheet():
 def load_prompts_from_sheet():
     """Load OpenAI prompts from Google Sheets."""
     try:
-        client = pygsheets.authorize(service_file="credentials.json")
+        client = get_google_client()
         sheet = client.open("Maya News Extraction")
 
         try:
@@ -184,7 +206,7 @@ def init_google_sheet():
     """Initialize Google Sheets client and open the Maya News Extraction spreadsheet."""
     try:
         # Authorize with service account credentials
-        client = pygsheets.authorize(service_file="credentials.json")
+        client = get_google_client()
         # Open the spreadsheet by name
         sheet = client.open("Maya News Extraction")
 
@@ -682,7 +704,7 @@ def main():
         if script or one_sheet:
             # Get the main spreadsheet object for saving
             try:
-                client = pygsheets.authorize(service_file="credentials.json")
+                client = get_google_client()
                 sheet = client.open("Maya News Extraction")
 
                 # Save 60-second explainer script

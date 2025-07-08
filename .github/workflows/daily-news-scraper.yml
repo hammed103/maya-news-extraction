@@ -31,28 +31,20 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         
-    - name: Create credentials file
-      run: |
-        cat > credentials.json << 'EOF'
-        ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
-        EOF
-        
     - name: Run news scraper
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
       run: |
         echo "🚀 Starting Maya News Scraper..."
         echo "📁 Current directory: $(pwd)"
         echo "📋 Files before running:"
         ls -la
-        echo "🔑 Checking if credentials file exists:"
-        ls -la credentials.json || echo "❌ credentials.json not found"
-        echo "🔑 Checking credentials file content (first few lines):"
-        head -3 credentials.json || echo "❌ Cannot read credentials.json"
-        echo "🔑 Checking OpenAI API key (first 10 chars):"
-        echo "${OPENAI_API_KEY:0:10}..." || echo "❌ OPENAI_API_KEY not set"
-        echo "🔑 Validating JSON format:"
-        python -c "import json; json.load(open('credentials.json')); print('✅ JSON is valid')" || echo "❌ Invalid JSON format"
+        echo "🔑 Checking environment variables:"
+        echo "OPENAI_API_KEY: ${OPENAI_API_KEY:0:10}..." || echo "❌ OPENAI_API_KEY not set"
+        echo "GOOGLE_CREDENTIALS_JSON length: ${#GOOGLE_CREDENTIALS_JSON} chars" || echo "❌ GOOGLE_CREDENTIALS_JSON not set"
+        echo "🔑 Validating Google credentials JSON:"
+        echo "$GOOGLE_CREDENTIALS_JSON" | python -c "import sys, json; json.load(sys.stdin); print('✅ Google credentials JSON is valid')" || echo "❌ Invalid Google credentials JSON"
         echo "▶️ Running scraper..."
         python ground_news_scraper.py
         echo "✅ Scraper completed"
