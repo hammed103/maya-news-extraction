@@ -27,8 +27,9 @@ HEADERS = {
 # Initialize OpenAI client
 try:
     openai_api_key = os.getenv("OPENAI_API_KEY")
-    if openai_api_key:
-        openai_client = OpenAI(api_key=openai_api_key)
+    if openai_api_key and openai_api_key.strip():
+        # Simple initialization without extra parameters
+        openai_client = OpenAI(api_key=openai_api_key.strip())
         logging.info("OpenAI client initialized successfully")
     else:
         openai_client = None
@@ -36,6 +37,7 @@ try:
 except Exception as e:
     openai_client = None
     logging.error(f"Failed to initialize OpenAI client: {e}")
+    logging.error("AI features will be disabled")
 
 # Cache for configuration data to avoid repeated API calls
 _cached_keywords = None
