@@ -388,13 +388,17 @@ def save_explainer_script(sheet, script):
         # Get today's date
         today = datetime.now().strftime("%Y-%m-%d")
 
-        # Check if today's entry already exists
+        # Check if today's entry already exists and find next available row
         all_data = worksheet.get_all_values()
         today_row = None
+        last_data_row = 1  # Start after header row
+
         for i, row in enumerate(all_data):
-            if len(row) > 0 and row[0] == today:
-                today_row = i + 1  # 1-based indexing
-                break
+            if len(row) > 0 and any(cell.strip() for cell in row):  # Non-empty row
+                last_data_row = i + 1  # 1-based indexing
+                if row[0] == today:
+                    today_row = i + 1
+                    break
 
         # Prepare the data to save
         data_row = [today, script]
@@ -405,17 +409,10 @@ def save_explainer_script(sheet, script):
             worksheet.update_row(today_row, data_row)
             logging.info(f"Updated existing explainer script for {today}")
         else:
-            # Add new entry using append_table which handles row positioning
-            try:
-                worksheet.append_table(data_row)
-                logging.info(f"Added new explainer script for {today}")
-            except Exception:
-                # Fallback to manual row insertion
-                next_row = len(all_data) + 1 if all_data else 2
-                worksheet.update_row(next_row, data_row)
-                logging.info(
-                    f"Added new explainer script for {today} at row {next_row}"
-                )
+            # Add new entry to the next available row after last data
+            next_row = last_data_row + 1
+            worksheet.update_row(next_row, data_row)
+            logging.info(f"Added new explainer script for {today} at row {next_row}")
 
         logging.info(f"Successfully saved explainer script to '{sheet_name}'")
         return True
@@ -448,13 +445,17 @@ def save_one_sheet(sheet, one_sheet):
         # Get today's date
         today = datetime.now().strftime("%Y-%m-%d")
 
-        # Check if today's entry already exists
+        # Check if today's entry already exists and find next available row
         all_data = worksheet.get_all_values()
         today_row = None
+        last_data_row = 1  # Start after header row
+
         for i, row in enumerate(all_data):
-            if len(row) > 0 and row[0] == today:
-                today_row = i + 1  # 1-based indexing
-                break
+            if len(row) > 0 and any(cell.strip() for cell in row):  # Non-empty row
+                last_data_row = i + 1  # 1-based indexing
+                if row[0] == today:
+                    today_row = i + 1
+                    break
 
         # Prepare the data to save
         data_row = [today, one_sheet]
@@ -465,15 +466,10 @@ def save_one_sheet(sheet, one_sheet):
             worksheet.update_row(today_row, data_row)
             logging.info(f"Updated existing one-sheet for {today}")
         else:
-            # Add new entry using append_table which handles row positioning
-            try:
-                worksheet.append_table(data_row)
-                logging.info(f"Added new one-sheet for {today}")
-            except Exception:
-                # Fallback to manual row insertion
-                next_row = len(all_data) + 1 if all_data else 2
-                worksheet.update_row(next_row, data_row)
-                logging.info(f"Added new one-sheet for {today} at row {next_row}")
+            # Add new entry to the next available row after last data
+            next_row = last_data_row + 1
+            worksheet.update_row(next_row, data_row)
+            logging.info(f"Added new one-sheet for {today} at row {next_row}")
 
         logging.info(f"Successfully saved one-sheet to '{sheet_name}'")
         return True
