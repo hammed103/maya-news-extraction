@@ -25,6 +25,7 @@ HEADERS = {
 }
 
 # Initialize OpenAI client
+openai_client = None
 try:
     openai_api_key = os.getenv("OPENAI_API_KEY")
     if openai_api_key and openai_api_key.strip():
@@ -34,20 +35,34 @@ try:
         logging.info(f"OpenAI library version: {openai.__version__}")
         logging.info(f"API key format check: {openai_api_key.strip()[:10]}...")
 
-        # Initialize client according to v1+ documentation
-        openai_client = OpenAI(api_key=openai_api_key.strip())
+        # Try different initialization methods for compatibility
+        try:
+            # Method 1: Standard initialization (v1.0+)
+            openai_client = OpenAI(api_key=openai_api_key.strip())
+            logging.info("OpenAI client initialized with standard method")
+        except TypeError as te:
+            logging.warning(f"Standard initialization failed: {te}")
+            try:
+                # Method 2: Legacy initialization (fallback)
+                openai_client = OpenAI()
+                openai_client.api_key = openai_api_key.strip()
+                logging.info("OpenAI client initialized with legacy method")
+            except Exception as le:
+                logging.error(f"Legacy initialization also failed: {le}")
+                raise le
 
         # Test the client with a simple call
-        logging.info("Testing OpenAI client connection...")
-        test_response = openai_client.models.list()
-        logging.info("OpenAI client initialized and tested successfully")
+        if openai_client:
+            logging.info("Testing OpenAI client connection...")
+            test_response = openai_client.models.list()
+            logging.info("OpenAI client initialized and tested successfully")
     else:
-        openai_client = None
         logging.warning("OPENAI_API_KEY not found - AI features will be disabled")
 except Exception as e:
     openai_client = None
     logging.error(f"Failed to initialize OpenAI client: {e}")
     logging.error(f"Exception type: {type(e).__name__}")
+    logging.error(f"Exception details: {str(e)}")
     logging.error("AI features will be disabled")
 
 # Cache for configuration data to avoid repeated API calls
