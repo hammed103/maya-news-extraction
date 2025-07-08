@@ -28,15 +28,26 @@ HEADERS = {
 try:
     openai_api_key = os.getenv("OPENAI_API_KEY")
     if openai_api_key and openai_api_key.strip():
-        # Simple initialization without extra parameters
+        # Debug: Check OpenAI version and API key format
+        import openai
+
+        logging.info(f"OpenAI library version: {openai.__version__}")
+        logging.info(f"API key format check: {openai_api_key.strip()[:10]}...")
+
+        # Initialize client according to v1+ documentation
         openai_client = OpenAI(api_key=openai_api_key.strip())
-        logging.info("OpenAI client initialized successfully")
+
+        # Test the client with a simple call
+        logging.info("Testing OpenAI client connection...")
+        test_response = openai_client.models.list()
+        logging.info("OpenAI client initialized and tested successfully")
     else:
         openai_client = None
         logging.warning("OPENAI_API_KEY not found - AI features will be disabled")
 except Exception as e:
     openai_client = None
     logging.error(f"Failed to initialize OpenAI client: {e}")
+    logging.error(f"Exception type: {type(e).__name__}")
     logging.error("AI features will be disabled")
 
 # Cache for configuration data to avoid repeated API calls
