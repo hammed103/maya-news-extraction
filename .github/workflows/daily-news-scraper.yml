@@ -30,6 +30,28 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+
+    - name: Test secrets availability
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+      run: |
+        echo "🔍 Testing secret availability..."
+        if [ -z "$OPENAI_API_KEY" ]; then
+          echo "❌ OPENAI_API_KEY secret is not set or empty"
+          exit 1
+        else
+          echo "✅ OPENAI_API_KEY secret is available (${#OPENAI_API_KEY} chars)"
+        fi
+
+        if [ -z "$GOOGLE_CREDENTIALS_JSON" ]; then
+          echo "❌ GOOGLE_CREDENTIALS_JSON secret is not set or empty"
+          exit 1
+        else
+          echo "✅ GOOGLE_CREDENTIALS_JSON secret is available (${#GOOGLE_CREDENTIALS_JSON} chars)"
+        fi
+
+        echo "🎯 All secrets are properly configured!"
         
     - name: Run news scraper
       env:
